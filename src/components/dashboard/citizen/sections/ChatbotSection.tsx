@@ -75,7 +75,7 @@ export default function ChatbotSection() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system_instruction: { parts: { text: systemInstruction } },
+          system_instruction: { parts: [{ text: systemInstruction }] },
           contents: [{ parts: [{ text: text }] }]
         })
       });
