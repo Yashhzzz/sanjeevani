@@ -6,16 +6,6 @@ import path from "path";
 export default defineConfig(({ mode }) => {
   const plugins = [react()];
 
-  if (mode === "development") {
-    try {
-      // lovable-tagger is optional, only used in lovable.dev environment
-      const { componentTagger } = require("lovable-tagger");
-      plugins.push(componentTagger());
-    } catch {
-      // lovable-tagger not available, skip
-    }
-  }
-
   return {
     server: {
       host: "::",
