@@ -54,8 +54,8 @@ export default function LoginPage() {
     try {
       await login(email, password, selectedRole);
       navigate(DASHBOARD_ROUTES[selectedRole]);
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
     }
   };
 
@@ -68,8 +68,8 @@ export default function LoginPage() {
     try {
       await login(demo.email, "demo1234", role);
       navigate(DASHBOARD_ROUTES[role]);
-    } catch {
-      setError("Demo login failed. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "Demo login failed. Please try again.");
     }
   };
 
