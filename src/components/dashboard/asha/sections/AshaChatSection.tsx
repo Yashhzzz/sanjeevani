@@ -31,15 +31,37 @@ export default function AshaChat() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, isTyping]);
 
-  const send = (text: string) => {
+  const GEMINI_API_KEY = "AIzaSyA9n_DHvPsrrVJJR7NobmtfMAsNrb0U5Z4";
+
+  const send = async (text: string) => {
     if (!text.trim()) return;
     setMessages(m => [...m, { id: Date.now(), side: "user", text }]);
     setInput("");
     setIsTyping(true);
-    setTimeout(() => {
-      setMessages(m => [...m, { id: Date.now() + 1, side: "bot", text: BOT_RESPONSES[text] ?? BOT_RESPONSES.default }]);
+
+    try {
+      const systemInstruction = "You are the Sanjeevani AI Assistant optimized for ASHA Workers. You cover pincode 781001. There are 23 active cases and the risk is MEDIUM. Provide concise, actionable advice for field workers about disease protocols, outbreak tracking, and patient management. Format nicely with markdown and emojis.";
+      
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: { text: systemInstruction } },
+          contents: [{ parts: [{ text: text }] }]
+        })
+      });
+      
+      if (!res.ok) throw new Error("API Error");
+      const data = await res.json();
+      const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't process that.";
+      
+      setMessages(m => [...m, { id: Date.now() + 1, side: "bot", text: responseText }]);
+    } catch (e) {
+      console.error(e);
+      setMessages(m => [...m, { id: Date.now() + 1, side: "bot", text: "Connection error. Please try again." }]);
+    } finally {
       setIsTyping(false);
-    }, 1100);
+    }
   };
 
   return (

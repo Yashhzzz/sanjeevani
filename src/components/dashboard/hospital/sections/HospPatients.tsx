@@ -264,7 +264,7 @@ function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onC
               
               <div className="flex gap-3 pt-4 border-t border-gray-100">
                 <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 py-3 rounded-xl text-white text-sm font-semibold shadow-lg hover:shadow-xl hover:-translate-y-px transition-all" style={{ background: "#1565C0", shadowColor: "rgba(21, 101, 192, 0.3)" }}>
+                <button type="submit" className="flex-1 py-3 rounded-xl text-white text-sm font-semibold shadow-lg hover:shadow-xl hover:-translate-y-px transition-all" style={{ background: "#1565C0" }}>
                   {patient ? "Update Patient" : "Save Patient"}
                 </button>
               </div>

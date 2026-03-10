@@ -58,17 +58,38 @@ export default function ChatbotSection() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const sendMessage = (text: string) => {
+  const GEMINI_API_KEY = "AIzaSyA9n_DHvPsrrVJJR7NobmtfMAsNrb0U5Z4";
+
+  const sendMessage = async (text: string) => {
     if (!text.trim()) return;
     const userMsg: Message = { id: Date.now(), side: "user", text, time: "Just now" };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsTyping(true);
-    setTimeout(() => {
-      const responseText = BOT_RESPONSES[text] ?? BOT_RESPONSES.default;
+
+    try {
+      const systemInstruction = "You are the Sanjeevani AI Health Assistant for a citizen in Guwahati (pincode 781001). The current area risk is MEDIUM. Provide helpful, concise health advice, symptom checking, and water safety tips. Keep answers short and use emojis.";
+      
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: { text: systemInstruction } },
+          contents: [{ parts: [{ text: text }] }]
+        })
+      });
+      
+      if (!res.ok) throw new Error("API Error");
+      const data = await res.json();
+      const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't process that.";
+      
       setMessages((prev) => [...prev, { id: Date.now() + 1, side: "bot", text: responseText, time: "Just now" }]);
+    } catch (e) {
+      console.error(e);
+      setMessages((prev) => [...prev, { id: Date.now() + 1, side: "bot", text: "I'm having trouble connecting right now. Please try again.", time: "Just now" }]);
+    } finally {
       setIsTyping(false);
-    }, 1200);
+    }
   };
 
   return (
