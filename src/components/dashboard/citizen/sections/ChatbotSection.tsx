@@ -58,7 +58,8 @@ export default function ChatbotSection() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const GEMINI_API_KEY = "AIzaSyA9n_DHvPsrrVJJR7NobmtfMAsNrb0U5Z4";
+  const GEMINI_API_KEY =
+    import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyA9n_DHvPsrrVJJR7NobmtfMAsNrb0U5Z4";
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;

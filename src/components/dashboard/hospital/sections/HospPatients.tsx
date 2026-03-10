@@ -7,7 +7,8 @@ type Patient = typeof PATIENTS_DATA[number];
 type GenderFilter = "All" | "M" | "F" | "Other";
 type RiskFilter = "All" | RiskLevel;
 
-const GEMINI_API_KEY = "AIzaSyA9n_DHvPsrrVJJR7NobmtfMAsNrb0U5Z4";
+const GEMINI_API_KEY =
+  import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyA9n_DHvPsrrVJJR7NobmtfMAsNrb0U5Z4";
 
 // ─── Delete confirm modal ─────────────────────────────────────────────────────
 function DeleteModal({ patient, onClose, onConfirm }: { patient: Patient; onClose: () => void; onConfirm: () => void }) {
