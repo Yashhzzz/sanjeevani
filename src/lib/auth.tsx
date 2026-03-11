@@ -1,7 +1,4 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { auth, db } from "./firebase";
 
 export type UserRole = "citizen" | "asha" | "hospital";
 
@@ -14,7 +11,7 @@ interface AuthUser {
 interface AuthContextValue {
   user: AuthUser | null;
   login: (email: string, password: string, role: UserRole) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => void;
   isLoading: boolean;
 }
 
@@ -28,72 +25,33 @@ const DEMO_ACCOUNTS: Record<UserRole, AuthUser> = {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // start loading while checking session
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Restore session from localStorage on mount
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const stored = localStorage.getItem("sanjeevani_user");
+    if (stored) {
       try {
-        if (firebaseUser) {
-          const appId = import.meta.env.VITE_FIREBASE_APP_ID;
-          if (appId) {
-            const docRef = doc(db, `personalData/${appId}/users/${firebaseUser.uid}/profile/details`);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-              const data = docSnap.data();
-              setUser({ email: firebaseUser.email!, role: data.role as UserRole, name: data.name });
-            } else {
-              setUser(null);
-            }
-          }
-        } else {
-          setUser(null);
-        }
-      } catch (err) {
-        console.error("Error fetching user profile", err);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
+        setUser(JSON.parse(stored));
+      } catch {
+        localStorage.removeItem("sanjeevani_user");
       }
-    });
-
-    return () => unsubscribe();
+    }
   }, []);
 
-  const login = async (email: string, password: string, role: UserRole): Promise<void> => {
+  const login = async (email: string, _password: string, role: UserRole): Promise<void> => {
     setIsLoading(true);
-    try {
-      const { user: firebaseUser } = await signInWithEmailAndPassword(auth, email, password);
-      
-      const appId = import.meta.env.VITE_FIREBASE_APP_ID;
-      if (!appId) throw new Error("Firebase configuration error");
-
-      const docRef = doc(db, `personalData/${appId}/users/${firebaseUser.uid}/profile/details`);
-      const docSnap = await getDoc(docRef);
-      
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.role !== role) {
-          await signOut(auth);
-          throw new Error("Invalid role for this account. Please select the correct role tab.");
-        }
-        setUser({ email: firebaseUser.email!, role: data.role as UserRole, name: data.name });
-      } else {
-        await signOut(auth);
-        throw new Error("User profile not found.");
-      }
-    } catch (err: any) {
-      if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
-        throw new Error("Invalid email or password.");
-      }
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
+    // Simulate network delay
+    await new Promise((res) => setTimeout(res, 900));
+    const authUser: AuthUser = { email, role, name: DEMO_ACCOUNTS[role].name };
+    setUser(authUser);
+    localStorage.setItem("sanjeevani_user", JSON.stringify(authUser));
+    setIsLoading(false);
   };
 
-  const logout = async () => {
-    await signOut(auth);
+  const logout = () => {
     setUser(null);
+    localStorage.removeItem("sanjeevani_user");
   };
 
   return (
